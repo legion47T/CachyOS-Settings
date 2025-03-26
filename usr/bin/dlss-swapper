@@ -1,13 +1,57 @@
 #!/usr/bin/bash
 
-# This forces Nvidia DLSS to use the latest preset for SR, RR and framegen + updates the dlss dlls via ngx
+# Default values for options (on by default)
+no_ngx_update=0
+no_dlss_rr=0
+no_dlss_sr=0
+no_dlss_fg=0
 
-export PROTON_ENABLE_NGX_UPDATER=1
-export DXVK_NVAPI_DRS_NGX_DLSS_RR_OVERRIDE=on
-export DXVK_NVAPI_DRS_NGX_DLSS_SR_OVERRIDE=on
-export DXVK_NVAPI_DRS_NGX_DLSS_FG_OVERRIDE=on
+# Function to display help message
+show_help() {
+    echo "Usage: $0 [options] [command]"
+    echo "Options:"
+    echo "  --no-ngx-update    Disable NGX updater"
+    echo "  --no-dlss-rr       Disable DLSS RR override"
+    echo "  --no-dlss-sr       Disable DLSS SR override"
+    echo "  --no-dlss-fg       Disable DLSS FG override"
+    echo "  -h, --help         Show this help message and exit"
+    exit 0
+}
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --no-ngx-update)
+            no_ngx_update=1
+            ;;
+        --no-dlss-rr)
+            no_dlss_rr=1
+            ;;
+        --no-dlss-sr)
+            no_dlss_sr=1
+            ;;
+        --no-dlss-fg)
+            no_dlss_fg=1
+            ;;
+        -h|--help)
+            show_help
+            ;;
+        *)
+            break
+            ;;
+    esac
+    shift
+done
+
+# Apply environment variables based on parsed options
+[[ $no_ngx_update -eq 0 ]] && export PROTON_ENABLE_NGX_UPDATER=1
+[[ $no_dlss_rr -eq 0 ]] && export DXVK_NVAPI_DRS_NGX_DLSS_RR_OVERRIDE=on
+[[ $no_dlss_sr -eq 0 ]] && export DXVK_NVAPI_DRS_NGX_DLSS_SR_OVERRIDE=on
+[[ $no_dlss_fg -eq 0 ]] && export DXVK_NVAPI_DRS_NGX_DLSS_FG_OVERRIDE=on
+
+# Always set latest render presets
 export DXVK_NVAPI_DRS_NGX_DLSS_RR_OVERRIDE_RENDER_PRESET_SELECTION=render_preset_latest
 export DXVK_NVAPI_DRS_NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION=render_preset_latest
 
-# applied variables, now execute the rest of the command
+# Execute the remaining command
 exec "$@"
